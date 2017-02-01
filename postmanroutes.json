@@ -1,0 +1,149 @@
+{
+	"variables": [],
+	"info": {
+		"name": "apialbum",
+		"_postman_id": "81371e19-156d-da58-953b-f4210d070315",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "/signup | Créer un user",
+			"request": {
+				"url": "http://localhost:2020/signup",
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"pseudo\":\"olive\",\"email\":\"xaintdeadx@hotmail.fr\"}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "/login | Récupère le token",
+			"request": {
+				"url": "http://localhost:2020/login/",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"username\":\"olive\",\"password\":\"dxoxhNql0b\"}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "/album | Créer un album (Token+Admin)",
+			"request": {
+				"url": "http://localhost:2020/album?name=soprano&description=sdfdfssdfdfs&image=http://limage.pngg&years=1999&genre=rap",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"description": ""
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOjMsImdyYWRlIjoyLCJleHAiOjE0ODYyMjkyODh9.fnzXWKx6IJLQ1NjsPrSWcc8lG3gGzhp2_tMahCkdXIk",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "/favorite/$IdAlbum | Ajouter/Retirer des favoris",
+			"request": {
+				"url": "http://localhost:2020/favorite/2",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOjMsImdyYWRlIjowLCJleHAiOjE0ODYyMjg1NzV9.KE4DUs2lzfjxAYDB60BGugC7HbedTym6tHTj2INDcAU",
+						"description": ""
+					}
+				],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "/album/:pagination | Liste les albums (par 10)",
+			"request": {
+				"url": "http://localhost:2020/album/0",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "/favorite/:pagination | Liste les favoris (par 10)",
+			"request": {
+				"url": "http://localhost:2020/favorite/0/",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOjMsImdyYWRlIjowLCJleHAiOjE0ODYyMjg1NzV9.KE4DUs2lzfjxAYDB60BGugC7HbedTym6tHTj2INDcAU",
+						"description": ""
+					}
+				],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "/favorite/:pagination/:iduser | Liste les favoris d'un user particulier",
+			"request": {
+				"url": "http://localhost:2020/favorite/0/1",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOjMsImdyYWRlIjowLCJleHAiOjE0ODYyMjg1NzV9.KE4DUs2lzfjxAYDB60BGugC7HbedTym6tHTj2INDcAU",
+						"description": ""
+					}
+				],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "/reset | reset le pass",
+			"request": {
+				"url": "http://localhost:2020/reset",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOjEwLCJncmFkZSI6MCwiRW1haWwiOiJ4YWludGRlYWR4QGhvdG1haWwuZnIiLCJleHAiOjE0ODYyMzIyNDJ9.H3dTEevPmPJLtIWkGO-xzZ5KK70U_sZ1_Dy87eWR6Zw",
+						"description": ""
+					}
+				],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
