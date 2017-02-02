@@ -11,6 +11,7 @@ type User struct {
 	Email     string `gorm:"type:varchar(100);unique_index"`
 	Password  string
 	Grade     int
+	Favorites []Favorite
 }
 
 type Album struct {
@@ -31,6 +32,6 @@ type Favorite struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt *time.Time
-	UserId    uint
+	UserID    uint
 	Album     uint
 }

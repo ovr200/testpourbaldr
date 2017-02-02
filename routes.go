@@ -239,12 +239,15 @@ func listfavorite(ctx *iris.Context) {
 		Uid, _ := strconv.Atoi(Userid)
 
 		var favorite []Favorite
+		var cuser User
 		if targetornot {
-			db.Where("user_id = ?", uint(intuserid)).Offset(pagin).Limit(10).Find(&favorite)
+			db.Where("id = ?", uint(intuserid)).First(&cuser)
+			db.Model(&cuser).Offset(pagin).Limit(10).Related(&favorite)
 			ctx.JSON(200, favorite)
 			return
 		} else {
-			db.Where("user_id = ?", uint(Uid)).Offset(pagin).Limit(10).Find(&favorite)
+			db.Where("id = ?", uint(Uid)).Find(&cuser)
+			db.Model(&cuser).Offset(pagin).Limit(10).Related(&favorite)
 			ctx.JSON(200, favorite)
 			return
 		}
@@ -276,10 +279,17 @@ func favorite(ctx *iris.Context) {
 		Uid, _ := strconv.Atoi(Userid)
 
 		var alb Album
-		var counta int
-		db.Where("id= ?", idalbumint).First(&alb).Count(&counta)
-		if counta == 0 {
+		var countalbum int
+		db.Where("id= ?", idalbumint).First(&alb).Count(&countalbum)
+		if countalbum == 0 {
 			ctx.JSON(200, iris.Map{"status": "error", "info": "Album inexistant"})
+			return
+		}
+		var usr User
+		var countuser int
+		db.Where("id= ?", Uid).First(&usr).Count(&countuser)
+		if countuser == 0 {
+			ctx.JSON(200, iris.Map{"status": "error", "info": "Utilisateur inexistant"})
 			return
 		}
 
@@ -288,7 +298,7 @@ func favorite(ctx *iris.Context) {
 		db.Where("user_id = ? AND album = ?", Uid, idalbumint).First(&onefav).Count(&count)
 
 		if count == 0 {
-			fav := Favorite{UserId: uint(Uid), Album: uint(idalbumint)}
+			fav := Favorite{UserID: uint(Uid), Album: uint(idalbumint)}
 			request := db.Create(&fav)
 			if request.Error != nil {
 				fmt.Println(request.Error)
@@ -296,7 +306,7 @@ func favorite(ctx *iris.Context) {
 			ctx.JSON(200, iris.Map{"status": "OK", "info": "Favoris ajouté"})
 			return
 		} else {
-			fav := Favorite{UserId: uint(Uid), Album: uint(idalbumint)}
+			fav := Favorite{UserID: uint(Uid), Album: uint(idalbumint)}
 			request := db.Delete(&fav)
 			if request.Error != nil {
 				fmt.Println(request.Error)
