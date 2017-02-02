@@ -9,14 +9,13 @@ import (
 )
 
 var (
-	db        *gorm.DB
-	jwtmiddle *jwtmiddleware.Middleware
-	// Config pour mise en prod
-	jwtkey     []byte = []byte("uneecle") // La clé pour signer les jwt
-	sqldbname  string = "apialbum"        // Nom de la db qui accueille les tables
-	smtpserver string = "smtp.free.fr"    // le serv smtp
-	smtpport   int    = 587               // port smtp
-	mailfrom   string = "lesite@domain.com"
+	db         *gorm.DB
+	jwtmiddle  *jwtmiddleware.Middleware
+	jwtkey     []byte = []byte("uneecle")   // La clé pour signer les jwt
+	sqldbname  string = "apialbum"          // Nom de la db qui accueille les tables
+	smtpserver string = "smtp.free.fr"      // le serv smtp
+	smtpport   int    = 587                 // port smtp
+	mailfrom   string = "lesite@domain.com" // Header from du mail
 )
 
 func main() {

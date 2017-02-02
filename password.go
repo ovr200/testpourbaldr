@@ -32,6 +32,7 @@ func passwordverif(hashpass, pass string) bool {
 	}
 }
 
+// génère un mot de passe avec les caractères dans "Chars []byte"
 func generatepass() string {
 	length := 10
 	new_pword := make([]byte, length)

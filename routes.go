@@ -32,6 +32,7 @@ type ValideFavorite struct {
 	Album string `form:"album"`
 }
 
+// Les claims sont des données passé dans le JWT et évite de sollicité la BDD pour rien
 type Cclaims struct {
 	Userid uint   `json:"userid"`
 	Grade  int    `json:"grade"`
@@ -44,7 +45,7 @@ func login(ctx *iris.Context) {
 	json := ValidLogin{}
 	err := ctx.ReadJSON(&json)
 	if err != nil {
-		ctx.JSON(200, iris.Map{"status": "Erreur", "info": "Requiert un json {username ,password"})
+		ctx.JSON(400, iris.Map{"status": "Erreur"})
 	} else {
 		var Cuser User
 		db.Model(&User{}).Where("Pseudo = ? ", json.Username).First(&Cuser)
@@ -64,7 +65,7 @@ func login(ctx *iris.Context) {
 			}
 			ctx.JSON(200, iris.Map{"status": "Succes", "token": signed})
 		} else {
-			ctx.JSON(200, iris.Map{"status": "Erreur"})
+			ctx.JSON(409, iris.Map{"status": "Erreur"})
 		}
 	}
 }
@@ -77,14 +78,14 @@ func newalbum(ctx *iris.Context) {
 		return []byte(jwtkey), nil
 	})
 	if err != nil {
-		ctx.JSON(200, iris.Map{"status": "erreur", "info": "Probleme token"})
+		ctx.JSON(409, iris.Map{"info": "Probleme token"})
 	}
 
 	if claims, ok := token.Claims.(*Cclaims); ok && token.Valid {
 		Grade := fmt.Sprintf("%d", claims.Grade)
 		Intgrade, _ := strconv.Atoi(Grade)
 		if Intgrade != 2 {
-			ctx.JSON(200, iris.Map{"status": "erreur", "info": "Nécessite le rang administrateur"})
+			ctx.JSON(401, iris.Map{"info": "Nécessite le rang administrateur"})
 			return
 		}
 	}
@@ -93,7 +94,7 @@ func newalbum(ctx *iris.Context) {
 	// Si le bind ne retourne pas d'erreur on récupère les données
 	err = ctx.ReadForm(&form)
 	if err != nil {
-		fmt.Println("Error when reading form: " + err.Error())
+		fmt.Println("Erreur pendant le binding: " + err.Error())
 	} else {
 		if form.Name != "" {
 			Album := Album{}
@@ -103,7 +104,7 @@ func newalbum(ctx *iris.Context) {
 			Album.Image = form.Image
 			YearsInt, err := strconv.Atoi(form.Years)
 			if err != nil {
-				ctx.JSON(200, iris.Map{"status": "Le champ years nécéssite un entier"})
+				ctx.JSON(400, iris.Map{"status": "Le champ years nécéssite un entier"})
 				return
 			}
 			Album.Years = YearsInt
@@ -114,7 +115,7 @@ func newalbum(ctx *iris.Context) {
 			ctx.JSON(200, iris.Map{"status": "Album enregistré"})
 
 		} else {
-			ctx.JSON(401, iris.Map{"status": "unauthorized"})
+			ctx.JSON(401, iris.Map{"status": "Form manquant"})
 		}
 	}
 
@@ -155,7 +156,7 @@ func signup(ctx *iris.Context) {
 	// Si le bind ne retourne pas d'erreur on récupère les données
 	err := ctx.ReadJSON(&form)
 	if err != nil {
-		ctx.JSON(200, iris.Map{"status": "Erreur", "info": "Requiert un json {pseudo ,email}"})
+		ctx.JSON(409, iris.Map{"info": "Requiert un json {pseudo ,email}"})
 	} else {
 		if form.Pseudo != "" {
 			aUser := User{}
@@ -172,16 +173,15 @@ func signup(ctx *iris.Context) {
 			db.Where("pseudo = ? AND email = ?", form.Pseudo, form.Email).First(&tuser).Count(&count)
 			if count == 0 {
 				db.Create(&aUser)
+				go sendpassword(form.Email, randompass)
 			} else {
-				ctx.JSON(200, iris.Map{"status": "Pseudo ou Email déja existant"})
+				ctx.JSON(409, iris.Map{"status": "Pseudo ou Email déja existant"})
 				return
 			}
 
-			go sendpassword(form.Email, randompass)
-
 			ctx.JSON(200, iris.Map{"status": "Nouvel Utilisateur enregistré"})
 		} else {
-			ctx.JSON(401, iris.Map{"status": "unauthorized"})
+			ctx.JSON(400, iris.Map{"status": "Form manquant"})
 		}
 	}
 
@@ -194,7 +194,7 @@ func listalbums(ctx *iris.Context) {
 	//vérifie que le param est un entier
 	pagin, err := strconv.Atoi(pagination)
 	if err != nil {
-		ctx.JSON(401, iris.Map{"status": "Nécessite un entier après /album/"})
+		ctx.JSON(400, iris.Map{"status": "Nécessite un entier après /album/"})
 		return
 	}
 	var album []Album
@@ -204,14 +204,16 @@ func listalbums(ctx *iris.Context) {
 
 func listfavorite(ctx *iris.Context) {
 	pagination := ctx.Param("pagination")
+	// targetornot définie si luser veut liste sa liste ou celle d'un utilisateur ciblé
 	targetornot := false
 	var intuserid int
 	var err error
+	//si après la route il n'y a rien alors il se cible tous seul
 	if ctx.Param("userid") != "/" {
 		puserid := strings.Replace(ctx.Param("userid"), "/", "", -1)
 		intuserid, err = strconv.Atoi(puserid)
 		if err != nil {
-			ctx.JSON(401, iris.Map{"status": "Nécessite un entier après /favorite/:pagination/"})
+			ctx.JSON(400, iris.Map{"status": "Nécessite un entier après /favorite/:pagination/"})
 			return
 		} else {
 			targetornot = true
@@ -221,17 +223,16 @@ func listfavorite(ctx *iris.Context) {
 	//vérifie que le param est un entier
 	pagin, err := strconv.Atoi(pagination)
 	if err != nil {
-		ctx.JSON(401, iris.Map{"status": "Nécessite un entier après /favorite/"})
+		ctx.JSON(400, iris.Map{"status": "Nécessite un entier après /favorite/"})
 		return
 	}
 
 	rawtoken := ctx.Get("jwt").(*jwt.Token).Raw
-
 	token, err := jwt.ParseWithClaims(rawtoken, &Cclaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(jwtkey), nil
 	})
 	if err != nil {
-		ctx.JSON(200, iris.Map{"status": "erreur", "info": "Probleme token"})
+		ctx.JSON(409, iris.Map{"status": "Probleme token"})
 	}
 
 	if claims, ok := token.Claims.(*Cclaims); ok && token.Valid {
@@ -266,12 +267,11 @@ func favorite(ctx *iris.Context) {
 	}
 
 	rawtoken := ctx.Get("jwt").(*jwt.Token).Raw
-
 	token, err := jwt.ParseWithClaims(rawtoken, &Cclaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(jwtkey), nil
 	})
 	if err != nil {
-		ctx.JSON(200, iris.Map{"status": "erreur", "info": "Probleme token"})
+		ctx.JSON(409, iris.Map{"status": "erreur", "info": "Probleme token"})
 	}
 
 	if claims, ok := token.Claims.(*Cclaims); ok && token.Valid {
@@ -282,14 +282,14 @@ func favorite(ctx *iris.Context) {
 		var countalbum int
 		db.Where("id= ?", idalbumint).First(&alb).Count(&countalbum)
 		if countalbum == 0 {
-			ctx.JSON(200, iris.Map{"status": "error", "info": "Album inexistant"})
+			ctx.JSON(409, iris.Map{"status": "error", "info": "Album inexistant"})
 			return
 		}
 		var usr User
 		var countuser int
 		db.Where("id= ?", Uid).First(&usr).Count(&countuser)
 		if countuser == 0 {
-			ctx.JSON(200, iris.Map{"status": "error", "info": "Utilisateur inexistant"})
+			ctx.JSON(409, iris.Map{"status": "Utilisateur inexistant"})
 			return
 		}
 
@@ -303,7 +303,7 @@ func favorite(ctx *iris.Context) {
 			if request.Error != nil {
 				fmt.Println(request.Error)
 			}
-			ctx.JSON(200, iris.Map{"status": "OK", "info": "Favoris ajouté"})
+			ctx.JSON(200, iris.Map{"status": "Favoris ajouté"})
 			return
 		} else {
 			fav := Favorite{UserID: uint(Uid), Album: uint(idalbumint)}
@@ -311,12 +311,13 @@ func favorite(ctx *iris.Context) {
 			if request.Error != nil {
 				fmt.Println(request.Error)
 			}
-			ctx.JSON(200, iris.Map{"status": "OK", "info": "Favoris retiré"})
+			ctx.JSON(200, iris.Map{"info": "Favoris retiré"})
 			return
 		}
 
 	} else {
-		fmt.Println(err)
+		ctx.JSON(409, iris.Map{"status": "Probleme token"})
+		returns
 	}
 	ctx.JSON(200, token)
 

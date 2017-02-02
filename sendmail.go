@@ -2,6 +2,7 @@ package main
 
 import "gopkg.in/gomail.v2"
 
+// renvoie une nouveau mot de passe
 func resetpassword(email, newpass string) {
 	m := gomail.NewMessage()
 	m.SetHeader("From", mailfrom)
@@ -16,6 +17,7 @@ func resetpassword(email, newpass string) {
 	}
 }
 
+// envoie un mail contenant mail et mot de passe
 func sendpassword(email, newpass string) {
 	m := gomail.NewMessage()
 	m.SetHeader("From", mailfrom)
