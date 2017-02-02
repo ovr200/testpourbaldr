@@ -168,18 +168,34 @@ func signup(ctx *iris.Context) {
 			hashpass := encrypt(randompass)
 			aUser.Password = hashpass
 
-			var tuser User
-			var count int
-			db.Where("pseudo = ? AND email = ?", form.Pseudo, form.Email).First(&tuser).Count(&count)
-			if count == 0 {
-				db.Create(&aUser)
-				go sendpassword(form.Email, randompass)
+			var cpseudo User
+			var cemail User
+			var countpseudo int
+			var countemail int
+			db.Where("pseudo = ?", form.Pseudo).First(&cpseudo).Count(&countpseudo)
+			if countpseudo != 0 {
+				ctx.JSON(200, iris.Map{"status": "Pseudo déja enregistré"})
+				return
+			}
+			db.Where("email = ?", form.Email).First(&cemail).Count(&countemail)
+			if countemail != 0 {
+				ctx.JSON(200, iris.Map{"status": "Email déja enregistré"})
+				return
+			}
+			if countpseudo == 0 && countpseudo == 0 {
+				go func() {
+					err := sendpassword(form.Email, randompass)
+					if err == nil {
+						db.Create(&aUser)
+					} else {
+						fmt.Println(err)
+					}
+				}()
+				ctx.JSON(200, iris.Map{"status": "Nouvel Utilisateur enregistré"})
 			} else {
 				ctx.JSON(409, iris.Map{"status": "Pseudo ou Email déja existant"})
 				return
 			}
-
-			ctx.JSON(200, iris.Map{"status": "Nouvel Utilisateur enregistré"})
 		} else {
 			ctx.JSON(400, iris.Map{"status": "Form manquant"})
 		}
@@ -317,7 +333,7 @@ func favorite(ctx *iris.Context) {
 
 	} else {
 		ctx.JSON(409, iris.Map{"status": "Probleme token"})
-		returns
+		return
 	}
 	ctx.JSON(200, token)
 

@@ -5,7 +5,7 @@ Api rest pour le test
 ----------
 > **Fait:**
 
-> - Utilisateurs stocké en BDD (mysql / pass crypté , décrypté à sa récéption).
+> - Utilisateur stocké en BDD (mysql / pass crypté , décrypté à sa récéption).
 > - Connexion avec JWT (la route /login sert le token après vérification en BDD)
 > - **/signup** créer un compte et envoie directement un email contenant l'email est le mot de passe.
 > - **/reset** renvoie un nouveau mot de passe par email à l'authentifié.
@@ -25,4 +25,4 @@ Api rest pour le test
 
 #### <i class="icon-file"></i> Postman
 
-J'ai joins le fichier postman que j'ai utilisé pour mes tests.
+J'ai joint le fichier postman que j'ai utilisé pour mes tests.

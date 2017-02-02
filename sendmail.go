@@ -1,9 +1,13 @@
 package main
 
-import "gopkg.in/gomail.v2"
+import (
+	"errors"
+
+	"gopkg.in/gomail.v2"
+)
 
 // renvoie une nouveau mot de passe
-func resetpassword(email, newpass string) {
+func resetpassword(email, newpass string) error {
 	m := gomail.NewMessage()
 	m.SetHeader("From", mailfrom)
 	m.SetHeader("To", email)
@@ -13,12 +17,13 @@ func resetpassword(email, newpass string) {
 	d := gomail.NewDialer(smtpserver, smtpport, "", "")
 
 	if err := d.DialAndSend(m); err != nil {
-		panic(err)
+		return errors.New("Connexion impossible avec le serveur smtp")
 	}
+	return nil
 }
 
 // envoie un mail contenant mail et mot de passe
-func sendpassword(email, newpass string) {
+func sendpassword(email, newpass string) error {
 	m := gomail.NewMessage()
 	m.SetHeader("From", mailfrom)
 	m.SetHeader("To", email)
@@ -28,6 +33,7 @@ func sendpassword(email, newpass string) {
 	d := gomail.NewDialer(smtpserver, smtpport, "", "")
 
 	if err := d.DialAndSend(m); err != nil {
-		panic(err)
+		return errors.New("Connexion impossible avec le serveur smtp")
 	}
+	return nil
 }
